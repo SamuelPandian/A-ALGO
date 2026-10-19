@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="480" fill="url(#bg)"/>
+
+  <!-- Grid decoration lines -->
+  <path d="M0 60 H900 M0 120 H900 M0 180 H900 M0 240 H900 M0 300 H900 M0 360 H900 M0 420 H900" stroke="#1e293b" stroke-width="0.5" opacity="0.4"/>
+  <path d="M100 0 V480 M200 0 V480 M300 0 V480 M400 0 V480 M500 0 V480 M600 0 V480 M700 0 V480 M800 0 V480" stroke="#1e293b" stroke-width="0.5" opacity="0.4"/>
+
+  <!-- Title Badge -->
+  <rect x="50" y="35" width="220" height="26" rx="13" fill="#0369a1" fill-opacity="0.2" stroke="#0ea5e9" stroke-width="1"/>
+  <text x="160" y="52" fill="#38bdf8" font-size="11" font-weight="bold" font-family="system-ui, sans-serif" text-anchor="middle" letter-spacing="1">AI SEARCH VISUALIZER</text>
+
+  <!-- Title Heading -->
+  <text x="50" y="90" fill="#ffffff" font-size="26" font-weight="800" font-family="system-ui, sans-serif">Interactive 8-Puzzle Solver</text>
+  <text x="50" y="115" fill="#94a3b8" font-size="13" font-family="system-ui, sans-serif">A* Informed Search Algorithm with Manhattan &amp; Misplaced Tiles Heuristics</text>
+
+  <!-- 3x3 Puzzle Board representation -->
+  <g transform="translate(50, 140)">
+    <rect width="280" height="280" rx="16" fill="#050811" stroke="#334155" stroke-width="2"/>
+    
+    <!-- 8 Tiles -->
+    <!-- Row 0: 2, 8, 3 -->
+    <rect x="14" y="14" width="76" height="76" rx="10" fill="url(#cardGrad)" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="52" y="60" fill="#ffffff" font-size="28" font-weight="bold" font-family="system-ui, sans-serif" text-anchor="middle">2</text>
+
+    <rect x="102" y="14" width="76" height="76" rx="10" fill="url(#cardGrad)" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="140" y="60" fill="#ffffff" font-size="28" font-weight="bold" font-family="system-ui, sans-serif" text-anchor="middle">8</text>
+
+    <rect x="190" y="14" width="76" height="76" rx="10" fill="url(#cardGrad)" stroke="#10b981" stroke-width="1.5"/>
+    <text x="228" y="60" fill="#ffffff" font-size="28" font-weight="bold" font-family="system-ui, sans-serif" text-anchor="middle">3</text>
+    <circle cx="254" cy="78" r="3" fill="#10b981"/>
+
+    <!-- Row 1: 1, 6, 4 -->
+    <rect x="14" y="102" width="76" height="76" rx="10" fill="url(#cardGrad)" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="52" y="148" fill="#ffffff" font-size="28" font-weight="bold" font-family="system-ui, sans-serif" text-anchor="middle">1</text>
+
+    <rect x="102" y="102" width="76" height="76" rx="10" fill="url(#cardGrad)" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="140" y="148" fill="#ffffff" font-size="28" font-weight="bold" font-family="system-ui, sans-serif" text-anchor="middle">6</text>
+
+    <rect x="190" y="102" width="76" height="76" rx="10" fill="url(#cardGrad)" stroke="#10b981" stroke-width="1.5"/>
+    <text x="228" y="148" fill="#ffffff" font-size="28" font-weight="bold" font-family="system-ui, sans-serif" text-anchor="middle">4</text>
+    <circle cx="254" cy="166" r="3" fill="#10b981"/>
+
+    <!-- Row 2: 7, [BLANK], 5 -->
+    <rect x="14" y="190" width="76" height="76" rx="10" fill="url(#cardGrad)" stroke="#10b981" stroke-width="1.5"/>
+    <text x="52" y="236" fill="#ffffff" font-size="28" font-weight="bold" font-family="system-ui, sans-serif" text-anchor="middle">7</text>
+    <circle cx="78" cy="254" r="3" fill="#10b981"/>
+
+    <rect x="102" y="190" width="76" height="76" rx="10" fill="#0f172a" fill-opacity="0.4" stroke="#475569" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <text x="140" y="232" fill="#64748b" font-size="11" font-weight="bold" font-family="monospace" text-anchor="middle">BLANK</text>
+
+    <rect x="190" y="190" width="76" height="76" rx="10" fill="url(#cardGrad)" stroke="#10b981" stroke-width="1.5"/>
+    <text x="228" y="236" fill="#ffffff" font-size="28" font-weight="bold" font-family="system-ui, sans-serif" text-anchor="middle">5</text>
+    <circle cx="254" cy="254" r="3" fill="#10b981"/>
+  </g>
+
+  <!-- Metrics & Search Info Panel -->
+  <g transform="translate(360, 140)">
+    <!-- Evaluation function banner -->
+    <rect width="490" height="60" rx="12" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+    <text x="20" y="28" fill="#94a3b8" font-size="11" font-family="monospace">EVALUATION FUNCTION</text>
+    <text x="20" y="48" fill="#38bdf8" font-size="16" font-weight="bold" font-family="monospace">f(n) = g(n) + h(n)</text>
+    <text x="220" y="46" fill="#64748b" font-size="12" font-family="system-ui, sans-serif">(g = path depth, h = heuristic)</text>
+
+    <!-- 4 Stats Boxes -->
+    <g transform="translate(0, 75)">
+      <!-- Optimal Moves -->
+      <rect width="112" height="75" rx="10" fill="#0f172a" stroke="#1e293b"/>
+      <text x="12" y="24" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif" font-weight="600">OPTIMAL MOVES</text>
+      <text x="12" y="55" fill="#38bdf8" font-size="24" font-weight="800" font-family="system-ui, sans-serif">5</text>
+
+      <!-- Nodes Generated -->
+      <g transform="translate(126, 0)">
+        <rect width="112" height="75" rx="10" fill="#0f172a" stroke="#1e293b"/>
+        <text x="12" y="24" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif" font-weight="600">NODES GENERATED</text>
+        <text x="12" y="55" fill="#818cf8" font-size="24" font-weight="800" font-family="system-ui, sans-serif">12</text>
+      </g>
+
+      <!-- Nodes Expanded -->
+      <g transform="translate(252, 0)">
+        <rect width="112" height="75" rx="10" fill="#0f172a" stroke="#1e293b"/>
+        <text x="12" y="24" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif" font-weight="600">NODES EXPANDED</text>
+        <text x="12" y="55" fill="#fbbf24" font-size="24" font-weight="800" font-family="system-ui, sans-serif">6</text>
+      </g>
+
+      <!-- Execution Time -->
+      <g transform="translate(378, 0)">
+        <rect width="112" height="75" rx="10" fill="#0f172a" stroke="#1e293b"/>
+        <text x="12" y="24" fill="#94a3b8" font-size="10" font-family="system-ui, sans-serif" font-weight="600">EXECUTION TIME</text>
+        <text x="12" y="55" fill="#34d399" font-size="22" font-weight="800" font-family="system-ui, sans-serif">1.7 ms</text>
+      </g>
+    </g>
+
+    <!-- Feature Checklist -->
+    <g transform="translate(0, 168)">
+      <rect width="490" height="112" rx="12" fill="#0f172a" stroke="#1e293b"/>
+      <text x="18" y="24" fill="#38bdf8" font-size="11" font-weight="bold" font-family="system-ui, sans-serif">KEY SYSTEM CAPABILITIES</text>
+      
+      <circle cx="24" cy="45" r="4" fill="#10b981"/>
+      <text x="36" y="49" fill="#cbd5e1" font-size="11" font-family="system-ui, sans-serif">A* with Binary Min-Heap Priority Queue (O(log N))</text>
+
+      <circle cx="24" cy="67" r="4" fill="#10b981"/>
+      <text x="36" y="71" fill="#cbd5e1" font-size="11" font-family="system-ui, sans-serif">Admissible Manhattan Distance &amp; Misplaced Tiles Heuristics</text>
+
+      <circle cx="24" cy="89" r="4" fill="#10b981"/>
+      <text x="36" y="93" fill="#cbd5e1" font-size="11" font-family="system-ui, sans-serif">Smooth blank tile sliding animations with Play/Pause/Scrub controls</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 8-Puzzle Solver | A* Search Algorithm</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- KaTeX for LaTeX Math -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#090d16] text-slate-100 min-h-screen font-sans antialiased selection:bg-sky-500 selection:text-white">
+
+  <!-- Sticky Navbar -->
+  <header class="sticky top-0 z-40 bg-[#090d16]/90 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
+          <i class="fa-solid fa-puzzle-piece text-white text-lg"></i>
+        </div>
+        <div>
+          <span class="text-base sm:text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-indigo-300">
+            8-Puzzle AI Solver
+          </span>
+          <span class="hidden sm:inline-block ml-2 text-xs px-2 py-0.5 rounded-full bg-sky-950 text-sky-400 border border-sky-800 font-mono">
+            A* Search
+          </span>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="flex items-center gap-1 sm:gap-2">
+        <a href="#solver-section" data-target="solver-section" class="nav-tab active px-3 py-1.5 rounded-lg text-sm font-medium border-b-2 border-sky-500 text-sky-400 hover:text-sky-300 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-play text-xs"></i> <span>Solver</span>
+        </a>
+        <a href="#guide-section" data-target="guide-section" class="nav-tab px-3 py-1.5 rounded-lg text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-book-open text-xs"></i> <span>A* Theory</span>
+        </a>
+        <a href="#about-section" data-target="about-section" class="nav-tab px-3 py-1.5 rounded-lg text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-info text-xs"></i> <span>About</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Header / Course Information Banner -->
+  <section class="border-b border-slate-800/80 bg-gradient-to-b from-slate-900/60 to-transparent py-6 sm:py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-mono text-sky-400 uppercase tracking-wider mb-1">
+            <i class="fa-solid fa-graduation-cap"></i> Course: Artificial Intelligence &bull; Digital Assignment
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Interactive 8-Puzzle Problem Solver
+          </h1>
+          <p class="text-sm sm:text-base text-slate-400 mt-1 max-w-3xl">
+            Visually simulating state-space exploration using the <strong class="text-sky-400 font-semibold">A* Informed Search Algorithm</strong> with admissible heuristic functions ($h_1$: Misplaced Tiles, $h_2$: Manhattan Distance).
+          </p>
+        </div>
+
+        <!-- Student & Project Badges -->
+        <div class="flex items-center gap-3 self-start md:self-auto bg-slate-900/80 border border-slate-800 rounded-xl p-3 shadow-inner">
+          <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-300">
+            <i class="fa-solid fa-user-astronaut text-sky-400"></i>
+          </div>
+          <div class="text-xs">
+            <div class="text-slate-400 font-medium">Samuel Pandian</div>
+            <div class="font-bold text-slate-200 flex items-center gap-1.5">
+              <span>A* Algorithm Implementation</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN SOLVER SECTION -->
+  <main id="solver-section" class="page-section max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- TOP CONTROL & PRESET BAR -->
+    <div class="glass-panel rounded-2xl p-4 sm:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+      <!-- Preset Dropdown -->
+      <div class="md:col-span-4 space-y-1">
+        <label for="presetSelector" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+          <i class="fa-solid fa-list-check text-sky-400"></i> Benchmark Preset
+        </label>
+        <select id="presetSelector" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <option value="assignment" selected>Case Study Example (5 Moves, Assignment State)</option>
+          <option value="easy">Easy Standard (4 Moves to Goal)</option>
+          <option value="medium">Medium Standard (10 Moves to Goal)</option>
+          <option value="hard">Challenging Puzzle (18 Moves to Goal)</option>
+        </select>
+      </div>
+
+      <!-- Heuristic Selection -->
+      <div class="md:col-span-4 space-y-1">
+        <label for="heuristicSelector" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+          <i class="fa-solid fa-brain text-amber-400"></i> Heuristic Function h(n)
+        </label>
+        <select id="heuristicSelector" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500">
+          <option value="manhattan" selected>Manhattan Distance (Taxi-Cab Metric, Admissible)</option>
+          <option value="misplaced">Misplaced Tiles Count (Hamming Metric, Admissible)</option>
+          <option value="linearConflict">Manhattan + Linear Conflict (Enhanced Admissible)</option>
+        </select>
+      </div>
+
+      <!-- Random Solvable Generator -->
+      <div class="md:col-span-4 space-y-1">
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-dice text-emerald-400"></i> Random Solvable Puzzle</span>
+          <select id="randomDifficulty" class="bg-slate-950 border border-slate-800 text-[11px] rounded px-1.5 py-0.5 text-slate-300">
+            <option value="easy">Easy (~6)</option>
+            <option value="medium" selected>Medium (~14)</option>
+            <option value="hard">Hard (~22)</option>
+          </select>
+        </label>
+        <button id="btnRandomScramble" type="button" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium px-4 py-2 rounded-lg text-sm transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-shuffle text-emerald-400"></i> Generate Random Puzzle
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN TWO-COLUMN WORKSPACE -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- LEFT COLUMN: 8-Puzzle Board & Interactive Controls (5 cols) -->
+      <div class="lg:col-span-5 space-y-6">
+        
+        <!-- Board Container Card -->
+        <div class="glass-panel rounded-2xl p-6 flex flex-col items-center relative overflow-hidden">
+          
+          <!-- Board Header Status -->
+          <div class="w-full flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-slate-400 uppercase">State:</span>
+              <span id="metricStatus" class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Solution Ready
+              </span>
+            </div>
+            <div class="text-xs font-mono text-slate-400">
+              Step <span id="currentStepBadge" class="text-sky-400 font-bold">0</span> of <span id="totalStepsBadge" class="text-slate-200 font-bold">0</span>
+            </div>
+          </div>
+
+          <!-- THE 3x3 PUZZLE BOARD -->
+          <div class="puzzle-board-container my-2">
+            <div id="mainPuzzleBoard" class="puzzle-board">
+              <!-- Rendered via JavaScript -->
+            </div>
+          </div>
+
+          <!-- Manual Hint -->
+          <div class="text-[11px] text-slate-400 text-center mt-3 flex items-center gap-1.5">
+            <i class="fa-solid fa-hand-pointer text-sky-400"></i>
+            <span>Click any tile adjacent to the blank slot to slide it manually.</span>
+          </div>
+
+          <!-- REFERENCE MINI BOARDS: Initial & Goal State -->
+          <div class="w-full grid grid-cols-2 gap-4 mt-6 pt-5 border-t border-slate-800/80">
+            <div class="flex flex-col items-center">
+              <span class="text-xs font-semibold text-slate-400 uppercase mb-2 flex items-center gap-1">
+                <i class="fa-solid fa-flag text-sky-400"></i> Initial State
+              </span>
+              <div id="initialMiniBoard" class="mini-puzzle-board"></div>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-xs font-semibold text-slate-400 uppercase mb-2 flex items-center gap-1">
+                <i class="fa-solid fa-bullseye text-emerald-400"></i> Target Goal State
+              </span>
+              <div id="goalMiniBoard" class="mini-puzzle-board"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLAYBACK INTERACTIVE CONTROLS CARD -->
+        <div class="glass-panel rounded-2xl p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-sky-400"></i> Interactive Controls
+            </h3>
+            <button id="btnSolveAStar" class="bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow-md shadow-sky-500/20 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-bolt"></i> Run A* Solver
+            </button>
+          </div>
+
+          <!-- Main Action Buttons (Section 9: Run, Pause, Resume, Next, Prev, Reset) -->
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            <button id="btnRun" title="Run Solution Animation from Start" class="bg-sky-600 hover:bg-sky-500 text-white p-2.5 rounded-lg text-sm font-bold shadow-lg shadow-sky-600/30 transition flex flex-col items-center justify-center gap-1">
+              <i class="fa-solid fa-play"></i>
+              <span class="text-[10px]">Run</span>
+            </button>
+            <button id="btnPause" title="Pause Animation" class="bg-slate-800 hover:bg-slate-700 text-amber-400 p-2.5 rounded-lg text-sm font-semibold transition flex flex-col items-center justify-center gap-1">
+              <i class="fa-solid fa-pause"></i>
+              <span class="text-[10px]">Pause</span>
+            </button>
+            <button id="btnResume" title="Resume Animation from Current Step" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 p-2.5 rounded-lg text-sm font-semibold transition flex flex-col items-center justify-center gap-1">
+              <i class="fa-solid fa-forward"></i>
+              <span class="text-[10px]">Resume</span>
+            </button>
+            <button id="btnPrev" title="Step Backward" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-lg text-sm font-semibold transition flex flex-col items-center justify-center gap-1">
+              <i class="fa-solid fa-backward-step"></i>
+              <span class="text-[10px]">Prev Step</span>
+            </button>
+            <button id="btnNext" title="Step Forward" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-lg text-sm font-semibold transition flex flex-col items-center justify-center gap-1">
+              <i class="fa-solid fa-forward-step"></i>
+              <span class="text-[10px]">Next Step</span>
+            </button>
+            <button id="btnReset" title="Reset Board to Initial Step 0" class="bg-slate-800 hover:bg-slate-700 text-rose-300 p-2.5 rounded-lg text-sm font-semibold transition flex flex-col items-center justify-center gap-1">
+              <i class="fa-solid fa-rotate-left"></i>
+              <span class="text-[10px]">Reset</span>
+            </button>
+          </div>
+
+          <!-- Speed Slider & Step Scrubber -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>Animation Speed:</span>
+                <span id="speedLabel" class="font-mono text-sky-400">600ms</span>
+              </div>
+              <input id="speedSlider" type="range" min="1" max="10" value="6" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+              <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                <span>Slow</span>
+                <span>Fast</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>Timeline Scrubber:</span>
+                <span class="text-[11px] text-slate-400 font-mono">Jump Step</span>
+              </div>
+              <input id="stepSlider" type="range" min="0" max="0" value="0" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer">
+              <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                <span>Start</span>
+                <span>Goal</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Solution Timeline Chips -->
+          <div class="pt-2">
+            <span class="text-[11px] font-semibold text-slate-400 block mb-1">Move Path Sequence:</span>
+            <div id="solutionTimeline" class="flex gap-1.5 overflow-x-auto pb-2 scrollbar-thin">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- MANUAL BOARD EDITOR ACCORDION / CARD -->
+        <div class="glass-panel rounded-2xl p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-pen-to-square text-sky-400"></i> Method 1: Manual Puzzle Input
+            </h3>
+            <span class="text-[11px] text-slate-500">Space-separated (0 or _ for blank)</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <label class="block text-slate-400 font-medium mb-1">Initial State (9 digits):</label>
+              <input id="initialStateInput" type="text" value="2 8 3 1 6 4 7 0 5" class="w-full font-mono bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:ring-1 focus:ring-sky-500">
+            </div>
+            <div>
+              <label class="block text-slate-400 font-medium mb-1">Goal State (9 digits):</label>
+              <input id="goalStateInput" type="text" value="1 2 3 8 0 4 7 6 5" class="w-full font-mono bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:ring-1 focus:ring-sky-500">
+            </div>
+          </div>
+
+          <!-- Live Parity Solvability Feedback -->
+          <div id="parityValidationNotice" class="text-xs p-2 rounded bg-slate-900 border border-slate-800 text-slate-300 font-mono">
+            &check; Solvable configuration verified.
+          </div>
+
+          <button id="btnApplyCustomState" type="button" class="w-full bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-800/60 font-semibold px-4 py-2 rounded-lg text-xs transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-check"></i> Apply Custom Boards
+          </button>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Search Visualization, Metrics & Frontier Explorer (7 cols) -->
+      <div class="lg:col-span-7 space-y-6">
+        
+        <!-- REAL-TIME PERFORMANCE METRICS (SOLUTION SUMMARY) -->
+        <div class="glass-panel rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-sky-400"></i> Search Process & Solution Metrics
+            </h3>
+            <span class="text-xs font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800">
+              A* Algorithm
+            </span>
+          </div>
+
+          <!-- 8 Metric Cards Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            
+            <!-- Moves Count -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col">
+              <span class="text-[11px] font-semibold text-slate-400 uppercase">Optimal Moves</span>
+              <span id="metricMoves" class="text-2xl font-black text-sky-400 mt-1">0</span>
+              <span class="text-[10px] text-slate-500 mt-0.5">Solution depth</span>
+            </div>
+
+            <!-- Nodes Generated -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col">
+              <span class="text-[11px] font-semibold text-slate-400 uppercase">Nodes Generated</span>
+              <span id="metricNodesGen" class="text-2xl font-black text-indigo-400 mt-1">0</span>
+              <span class="text-[10px] text-slate-500 mt-0.5">Total tree nodes</span>
+            </div>
+
+            <!-- Nodes Expanded -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col">
+              <span class="text-[11px] font-semibold text-slate-400 uppercase">Nodes Expanded</span>
+              <span id="metricNodesExp" class="text-2xl font-black text-amber-400 mt-1">0</span>
+              <span class="text-[10px] text-slate-500 mt-0.5">Closed set size</span>
+            </div>
+
+            <!-- Max Search Depth -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col">
+              <span class="text-[11px] font-semibold text-slate-400 uppercase">Max Depth</span>
+              <span id="metricDepth" class="text-2xl font-black text-emerald-400 mt-1">0</span>
+              <span class="text-[10px] text-slate-500 mt-0.5">Deepest explored</span>
+            </div>
+
+            <!-- Execution Time -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col">
+              <span class="text-[11px] font-semibold text-slate-400 uppercase">Execution Time</span>
+              <span id="metricTime" class="text-xl font-bold text-slate-200 mt-1">0 ms</span>
+              <span class="text-[10px] text-slate-500 mt-0.5">CPU solve time</span>
+            </div>
+
+            <!-- Memory Usage -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col">
+              <span class="text-[11px] font-semibold text-slate-400 uppercase">Approx. Memory</span>
+              <span id="metricMemory" class="text-xl font-bold text-slate-200 mt-1">~0 KB</span>
+              <span class="text-[10px] text-slate-500 mt-0.5">Heap footprint</span>
+            </div>
+
+            <!-- Current Node Cost f(n) -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col">
+              <span class="text-[11px] font-semibold text-slate-400 uppercase">Current f(n)</span>
+              <span id="metricF" class="text-2xl font-black text-sky-400 mt-1">0</span>
+              <span class="text-[10px] text-slate-500 mt-0.5">f(n) = g(n) + h(n)</span>
+            </div>
+
+            <!-- Component g and h -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col justify-center">
+              <div class="flex justify-between items-center text-xs font-mono">
+                <span class="text-slate-400">g(n) [cost]:</span>
+                <span id="metricG" class="font-bold text-emerald-400">0</span>
+              </div>
+              <div class="flex justify-between items-center text-xs font-mono mt-1 pt-1 border-t border-slate-800">
+                <span class="text-slate-400">h(n) [heur]:</span>
+                <span id="metricH" class="font-bold text-amber-400">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GENERATED SUCCESSOR STATES PANEL -->
+        <div class="glass-panel rounded-2xl p-5 space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div>
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-sitemap text-indigo-400"></i> Generated Successor States
+              </h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">Child nodes evaluated from current state by sliding adjacent tiles</p>
+            </div>
+            <span class="text-[10px] bg-indigo-950/80 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded">
+              Branching &le; 4
+            </span>
+          </div>
+
+          <div id="successorsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3 min-h-[100px]">
+            <!-- Rendered via JavaScript -->
+          </div>
+        </div>
+
+        <!-- FRONTIER (OPEN LIST) PRIORITY QUEUE INSPECTOR -->
+        <div class="glass-panel rounded-2xl p-5 space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div>
+              <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-layer-group text-sky-400"></i> Frontier (Priority Queue / Open List)
+              </h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">Nodes waiting for expansion, sorted in ascending order of f(n) = g(n) + h(n)</p>
+            </div>
+            <span class="text-[10px] bg-sky-950 text-sky-300 border border-sky-800 px-2 py-0.5 rounded">
+              Min-Heap Ordered
+            </span>
+          </div>
+
+          <div id="frontierListContainer" class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+            <!-- Rendered via JavaScript -->
+          </div>
+        </div>
+
+        <!-- HEURISTIC FORMULA EXPLAINER CARD -->
+        <div class="glass-panel rounded-2xl p-4 bg-gradient-to-r from-slate-900 to-indigo-950/40 border border-slate-800">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 flex-shrink-0 mt-0.5">
+              <i class="fa-solid fa-calculator text-sm"></i>
+            </div>
+            <div class="flex-1">
+              <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Active Heuristic Evaluation</h4>
+              <div id="heuristicFormulaDesc" class="mt-1">
+                <div class="text-xs text-sky-300 font-mono">h(n) = &Sigma; (|row<sub>i</sub> - row<sub>goal</sub>| + |col<sub>i</sub> - col<sub>goal</sub>|)</div>
+                <p class="text-[11px] text-slate-400 mt-1">Taxi-cab grid distance. Admissible, consistent, and strictly dominates misplaced tiles.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ALGORITHM THEORY & DOCUMENTATION SECTION -->
+  <section id="guide-section" class="page-section max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 border-t border-slate-800">
+    <div>
+      <div class="text-xs font-mono text-sky-400 uppercase tracking-wider mb-1">
+        Theoretical Foundations &bull; Artificial Intelligence
+      </div>
+      <h2 class="text-3xl font-extrabold text-white">
+        A* Search Algorithm Deep Dive
+      </h2>
+      <p class="text-slate-400 mt-2 max-w-3xl">
+        Comprehensive analysis of the A* search formulation for the 8-puzzle problem, heuristic properties, mathematical proofs of admissibility, optimality, and complexity.
+      </p>
+    </div>
+
+    <!-- 4 Main Cards: Principle, Admissibility, Heuristics, Complexity -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- 1. Description & Working Principle -->
+      <div class="glass-panel rounded-2xl p-6 space-y-3">
+        <div class="flex items-center gap-3 text-sky-400 font-bold text-base">
+          <i class="fa-solid fa-compass"></i>
+          <h3>Description &amp; Working Principle</h3>
+        </div>
+        <p class="text-sm text-slate-300 leading-relaxed">
+          <strong>A* Search</strong> is an informed (heuristic) search algorithm that computes the lowest-cost path from an initial state to a goal state. At each step, it chooses to expand the node $n$ that minimizes the evaluation function:
+        </p>
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-center text-sky-300 font-mono text-sm shadow-inner">
+          $$f(n) = g(n) + h(n)$$
+        </div>
+        <ul class="text-xs text-slate-400 space-y-1.5 list-disc list-inside">
+          <li><strong>$g(n)$</strong>: The exact cumulative path cost from the start state to node $n$ (number of moves made).</li>
+          <li><strong>$h(n)$</strong>: The estimated heuristic cost from node $n$ to the goal state.</li>
+          <li><strong>$f(n)$</strong>: The estimated total cost of the cheapest solution passing through node $n$.</li>
+        </ul>
+      </div>
+
+      <!-- 2. Optimality & Completeness -->
+      <div class="glass-panel rounded-2xl p-6 space-y-3">
+        <div class="flex items-center gap-3 text-emerald-400 font-bold text-base">
+          <i class="fa-solid fa-award"></i>
+          <h3>Completeness &amp; Optimality</h3>
+        </div>
+        <div class="space-y-3 text-sm text-slate-300 leading-relaxed">
+          <div>
+            <span class="font-bold text-white">&bull; Completeness:</span> 
+            A* is <strong>guaranteed to find a solution</strong> if one exists, provided the branching factor $b$ is finite and step costs $c \ge \epsilon > 0$.
+          </div>
+          <div>
+            <span class="font-bold text-white">&bull; Optimality:</span> 
+            A* is <strong>guaranteed to return the optimal (shortest) solution path</strong> if:
+            <ul class="text-xs text-slate-400 list-disc list-inside mt-1 space-y-1">
+              <li>In tree search: the heuristic $h(n)$ is <strong>admissible</strong> (never overestimates the true remaining cost, $h(n) \le h^*(n)$).</li>
+              <li>In graph search: the heuristic $h(n)$ is <strong>consistent (monotone)</strong>, satisfying the triangle inequality: $h(n) \le c(n, a, n') + h(n')$.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Heuristic Comparison -->
+      <div class="glass-panel rounded-2xl p-6 space-y-3">
+        <div class="flex items-center gap-3 text-amber-400 font-bold text-base">
+          <i class="fa-solid fa-scale-balanced"></i>
+          <h3>Comparison of Implemented Heuristics</h3>
+        </div>
+        <div class="space-y-3 text-sm text-slate-300">
+          <div>
+            <div class="font-bold text-slate-200">1. Misplaced Tiles ($h_1$):</div>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Counts tiles that are not in their target coordinates (excluding the blank space). Admissible because each misplaced tile must move at least once. However, it ignores distance, leading to larger frontier sets.
+            </p>
+          </div>
+          <div>
+            <div class="font-bold text-slate-200">2. Manhattan Distance ($h_2$):</div>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Sum of horizontal and vertical distances of tiles from their target positions. For every state $n$, $h_2(n) \ge h_1(n)$ (<strong>$h_2$ strictly dominates $h_1$</strong>). Therefore, A* with Manhattan distance explores strictly fewer or equal nodes.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Time & Space Complexity -->
+      <div class="glass-panel rounded-2xl p-6 space-y-3">
+        <div class="flex items-center gap-3 text-rose-400 font-bold text-base">
+          <i class="fa-solid fa-gauge-high"></i>
+          <h3>Complexity &amp; Practical Limitations</h3>
+        </div>
+        <div class="space-y-2 text-sm text-slate-300 leading-relaxed">
+          <div class="grid grid-cols-2 gap-2 text-xs font-mono my-2">
+            <div class="p-2 rounded bg-slate-950 border border-slate-800">
+              <span class="text-slate-400 block">Time Complexity:</span>
+              <span class="text-rose-400 font-bold text-sm">O(b<sup>d</sup>)</span>
+              <span class="text-[10px] text-slate-500 block">Exponential in worst case</span>
+            </div>
+            <div class="p-2 rounded bg-slate-950 border border-slate-800">
+              <span class="text-slate-400 block">Space Complexity:</span>
+              <span class="text-rose-400 font-bold text-sm">O(b<sup>d</sup>)</span>
+              <span class="text-[10px] text-slate-500 block">Must retain all nodes in memory</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400">
+            <strong>Limitation:</strong> Because A* maintains both the Frontier (Open List) and Explored Set (Closed List) in memory to guarantee optimality and avoid redundant cycles, memory exhaustion is typically the primary constraint for very deep puzzle states.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Mathematical Solvability & Inversion Parity Proof -->
+    <div class="glass-panel rounded-2xl p-6 space-y-4">
+      <h3 class="text-base font-bold text-sky-400 flex items-center gap-2">
+        <i class="fa-solid fa-calculator"></i> Mathematical Solvability (Inversion Parity Theorem)
+      </h3>
+      <div class="text-sm text-slate-300 space-y-2 leading-relaxed">
+        <p>
+          An 8-Puzzle consists of 9 tiles (numbers 1 to 8 and one blank space). The total number of board permutations is $9! = 362,880$. However, the state space is split into exactly <strong>two disjoint, disconnected subgraphs</strong> of $181,440$ states each.
+        </p>
+        <p class="text-xs text-slate-400">
+          A state $S$ is reachable from a goal state $G$ if and only if:
+        </p>
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-center text-emerald-300 font-mono text-sm">
+          $$\text{Inversions}(S) \equiv \text{Inversions}(G) \pmod 2$$
+        </div>
+        <p class="text-xs text-slate-400">
+          Horizontal moves change zero tile inversions. Vertical moves swap the blank with a tile 3 positions away, which changes the inversion count by $+2, 0,$ or $-2$, preserving the odd/even parity invariant.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT & CREDITS SECTION -->
+  <section id="about-section" class="page-section max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6 border-t border-slate-800">
+    <div class="glass-panel rounded-2xl p-6 space-y-4">
+      <h3 class="text-lg font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-code text-sky-400"></i> Project Architecture &amp; Technologies
+      </h3>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+          <span class="font-bold text-sky-400 block mb-1">Frontend Core</span>
+          <span class="text-slate-400">HTML5 Semantic Structure, Modern ES6 JavaScript (Classes, Min-Heap, Maps, Set).</span>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+          <span class="font-bold text-indigo-400 block mb-1">Styling &amp; Animations</span>
+          <span class="text-slate-400">Tailwind CSS &amp; Hardware-accelerated CSS3 Transitions for realistic tile sliding animations.</span>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+          <span class="font-bold text-emerald-400 block mb-1">Mathematical Engine</span>
+          <span class="text-slate-400">KaTeX LaTeX rendering, Inversion Parity validation, Manhattan &amp; Linear Conflict heuristics.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800/80 bg-slate-950 py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4">
+      <p>Artificial Intelligence Assignment &bull; Interactive 8-Puzzle Solver using A* Search</p>
+      <p class="mt-1 text-[11px] text-slate-600">Built with HTML5, CSS3, ES6 JavaScript, and Tailwind CSS. Deployed via GitHub Pages.</p>
+    </div>
+  </footer>
+
+  <!-- Toast Notification Banner -->
+  <div id="appToast" class="fixed bottom-6 right-6 z-50 max-w-md px-4 py-3 rounded-lg shadow-2xl border text-sm transition-all duration-300 opacity-0 pointer-events-none translate-y-4 flex items-center gap-3">
+    <!-- Updated via JS -->
+  </div>
+
+  <!-- APPLICATION SCRIPTS -->
+  <script src="js/puzzle.js"></script>
+  <script src="js/heuristics.js"></script>
+  <script src="js/astar.js"></script>
+  <script src="js/visualizer.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
